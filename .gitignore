@@ -1,0 +1,7 @@
+# Ignore output directories
+bin/
+tmp/
+lib/
+
+# Ignore batch files
+*.bat
