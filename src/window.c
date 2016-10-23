@@ -1,7 +1,5 @@
 #include "window.h"
 #include <stdlib.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 /* -------------------------------------------------- */
 /* Helper Functions declarations                      */
@@ -90,6 +88,16 @@ void window_close(struct window* window)
 bool window_should_close(struct window* window)
 {
     return glfwWindowShouldClose(window->window_handle);
+}
+
+void window_get_size(struct window* window, int* width, int* height)
+{
+    glfwGetWindowSize(window->window_handle, width, height);
+}
+
+struct GLFWwindow* window_get_glfw_handle(struct window* window)
+{
+    return window->window_handle;
 }
 
 void window_set_error_callback(struct window* window, window_error_cb error_cb)

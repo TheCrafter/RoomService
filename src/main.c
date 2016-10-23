@@ -44,6 +44,9 @@ int main()
     window_set_error_callback(window, error_callback);
     window_set_key_callback(window, key_callback);
 
+    /* Get GLFW handle */
+    GLFWwindow* glfw_handle = window_get_glfw_handle(window);
+
     /* Platform */
     //static GLFWwindow *win;
     int width = 0, height = 0;
@@ -51,28 +54,12 @@ int main()
     struct nk_color background;
 
     /* GLFW */
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit()) {
-        fprintf(stdout, "[GFLW] failed to init!\n");
-        exit(1);
-    }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "RoomService", NULL, NULL);
-    glfwMakeContextCurrent(win);
-    glfwGetWindowSize(win, &width, &height);
-
-    /* Load OpenGL extensions */
-    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+    window_get_size(window, &width, &height);
 
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);
+    ctx = nk_glfw3_init(glfw_handle, NK_GLFW3_INSTALL_CALLBACKS);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {struct nk_font_atlas *atlas;
@@ -94,7 +81,7 @@ int main()
     /*set_style(ctx, THEME_DARK);*/
 
     background = nk_rgb(28,48,62);
-    while (!glfwWindowShouldClose(win))
+    while (!window_should_close(window))
     {
         /* Input */
         glfwPollEvents();
@@ -146,7 +133,7 @@ int main()
         /* Draw */
         {float bg[4];
         nk_color_fv(bg, background);
-        glfwGetWindowSize(win, &width, &height);
+        window_get_size(window, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(bg[0], bg[1], bg[2], bg[3]);
@@ -156,7 +143,7 @@ int main()
          * Make sure to either a.) save and restore or b.) reset your own state after
          * rendering the UI. */
         nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-        glfwSwapBuffers(win);}
+        window_swap_buffers(window);}
     }
     nk_glfw3_shutdown();
     glfwTerminate();

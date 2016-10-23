@@ -33,6 +33,9 @@
 
 #include <stdbool.h>
 #include "input.h"
+/* TODO: Move glfw includes back to .c when window is integrated with nuklear */
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 /* Window data */
 struct window;
@@ -41,12 +44,13 @@ struct window;
 typedef void(*window_error_cb)();
 typedef void(*window_key_cb)(struct window*, int, int, int, int);
 
-/* Initialize the window */
+/* Initialize/Deinitialize the window */
 struct window* window_create(int width, int height, const char* title);
-
-/* De-initialize the window */
 void window_destroy(struct window* window);
 
+/* -------------------------------------------------- */
+/*                    Operations                      */
+/* -------------------------------------------------- */
 /* Updates the window */
 void window_update(struct window* window);
 
@@ -56,9 +60,19 @@ void window_swap_buffers(struct window* window);
 /* Sends close signal to window */
 void window_close(struct window* window);
 
+/* -------------------------------------------------- */
+/*                     Getters                        */
+/* -------------------------------------------------- */
 /* Checks if the window should close or not */
 bool window_should_close(struct window* window);
 
+void window_get_size(struct window* window, int* width, int* height);
+
+struct GLFWwindow* window_get_glfw_handle(struct window* window);
+
+/* -------------------------------------------------- */
+/*                    Callbacks                       */
+/* -------------------------------------------------- */
 /* Register an error callback for the window */
 void window_set_error_callback(struct window* window, window_error_cb error_cb);
 
