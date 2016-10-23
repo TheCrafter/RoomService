@@ -1,10 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glad/glad.h>
+
+#include <nuklear_config.h>
+#include <nuklear.h>
+#define NK_GLFW_GL3_IMPLEMENTATION
+#include "nuklear_glfw_gl3.h"
 #include "window.h"
 
-#include "nuklear_config.h"
-#include <nuklear.h>
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
+
+#define MAX_VERTEX_BUFFER 512 * 1024
+#define MAX_ELEMENT_BUFFER 128 * 1024
+
+#define UNUSED(a) (void)a
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 void error_callback(int error, const char* description)
 {
@@ -23,72 +36,130 @@ void key_callback(struct window* window, int key, int scancode, int action, int 
 
 int main()
 {
-    struct window* window = window_create(640, 480, "RoomService");
-
+    // Create window
+    struct window* window = window_create(WINDOW_WIDTH, WINDOW_HEIGHT, "RoomService");
     if (window == NULL)
         return -1;
 
     window_set_error_callback(window, error_callback);
     window_set_key_callback(window, key_callback);
 
-    /* Init GUI State nk */
-    struct nk_context context;
+    /* Platform */
+    //static GLFWwindow *win;
+    int width = 0, height = 0;
+    struct nk_context *ctx;
+    struct nk_color background;
 
-    /* Load Font */
-    struct nk_font_atlas atlas;
-    nk_font_atlas_init_default(&atlas);
-    nk_font_atlas_begin(&atlas);
-    struct nk_font* roboto = nk_font_atlas_add_from_file(&atlas, "", 14, 0);
-    nk_style_set_font(&context, &roboto->handle);
-    //context.style.font->width = 0;
-
-    nk_init_default(&context, 0);
-
-    enum {EASY, HARD};
-    int op = EASY;
-    float value = 0.6f;
-
-    /* Main loop */
-    while (!window_should_close(window))
-    {
-        /* Update */
-        window_update(window);
-
-        /* Render */
-        glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        struct nk_panel layout;
-        if (nk_begin(&context, &layout, "Show", nk_rect(50, 50, 220, 220),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
-            /* fixed widget pixel width */
-            nk_layout_row_static(&context, 30, 80, 1);
-            if (nk_button_label(&context, "button")) {
-                /* event handling */
-            }
-        
-            /* fixed widget window ratio width */
-            nk_layout_row_dynamic(&context, 30, 2);
-            if (nk_option_label(&context, "easy", op == EASY)) op = EASY;
-            if (nk_option_label(&context, "hard", op == HARD)) op = HARD;
-        
-            /* custom widget pixel width */
-            nk_layout_row_begin(&context, NK_STATIC, 30, 2);
-            {
-                nk_layout_row_push(&context, 50);
-                nk_label(&context, "Volume:", NK_TEXT_LEFT);
-                nk_layout_row_push(&context, 110);
-                nk_slider_float(&context, 0, &value, 1.0f, 0.1f);
-            }
-            nk_layout_row_end(&context);
-        }
-        nk_end(&context);
-
-        /* Swap buffers */
-        window_swap_buffers(window);
+    /* GLFW */
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit()) {
+        fprintf(stdout, "[GFLW] failed to init!\n");
+        exit(1);
     }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "RoomService", NULL, NULL);
+    glfwMakeContextCurrent(win);
+    glfwGetWindowSize(win, &width, &height);
 
-    /* Shutdown window */
-    window_destroy(window);
+    /* Load OpenGL extensions */
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+
+    /* OpenGL */
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);
+    /* Load Fonts: if none of these are loaded a default font will be used  */
+    /* Load Cursor: if you uncomment cursor loading please hide the cursor */
+    {struct nk_font_atlas *atlas;
+    nk_glfw3_font_stash_begin(&atlas);
+    /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+    struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "res/Font/Roboto-Regular.ttf", 16, 0);
+    /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
+    /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
+    /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
+    /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+    nk_glfw3_font_stash_end();
+    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+    nk_style_set_font(ctx, &roboto->handle);}
+
+    /* style.c */
+    /*set_style(ctx, THEME_WHITE);*/
+    /*set_style(ctx, THEME_RED);*/
+    /*set_style(ctx, THEME_BLUE);*/
+    /*set_style(ctx, THEME_DARK);*/
+
+    background = nk_rgb(28,48,62);
+    while (!glfwWindowShouldClose(win))
+    {
+        /* Input */
+        glfwPollEvents();
+        nk_glfw3_new_frame();
+
+        /* GUI */
+        {struct nk_panel layout;
+        if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+            NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        {
+            enum {EASY, HARD};
+            static int op = EASY;
+            static int property = 20;
+            nk_layout_row_static(ctx, 30, 80, 1);
+            if (nk_button_label(ctx, "button"))
+                fprintf(stdout, "button pressed\n");
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+            if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+
+            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+
+            {struct nk_panel combo;
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "background:", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            if (nk_combo_begin_color(ctx, &combo, background, nk_vec2(nk_widget_width(ctx),400))) {
+                nk_layout_row_dynamic(ctx, 120, 1);
+                background = nk_color_picker(ctx, background, NK_RGBA);
+                nk_layout_row_dynamic(ctx, 25, 1);
+                background.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, background.r, 255, 1,1);
+                background.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, background.g, 255, 1,1);
+                background.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, background.b, 255, 1,1);
+                background.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, background.a, 255, 1,1);
+                nk_combo_end(ctx);
+            }}
+        }
+        nk_end(ctx);}
+
+        /* -------------- EXAMPLES ---------------- */
+        /*calculator(ctx);*/
+        /*overview(ctx);*/
+        /*node_editor(ctx);*/
+        /* ----------------------------------------- */
+
+        /* Draw */
+        {float bg[4];
+        nk_color_fv(bg, background);
+        glfwGetWindowSize(win, &width, &height);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(bg[0], bg[1], bg[2], bg[3]);
+        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+         * with blending, scissor, face culling, depth test and viewport and
+         * defaults everything back into a default state.
+         * Make sure to either a.) save and restore or b.) reset your own state after
+         * rendering the UI. */
+        nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+        glfwSwapBuffers(win);}
+    }
+    nk_glfw3_shutdown();
+    glfwTerminate();
+
     return 0;
 }
