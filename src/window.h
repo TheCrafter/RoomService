@@ -41,7 +41,7 @@
 struct window;
 
 /* Callbacks */
-typedef void(*window_error_cb)();
+typedef void(*window_error_cb)(int error, const char* description);
 typedef void(*window_key_cb)(struct window*, int, int, int, int);
 
 /* Initialize/Deinitialize the window */
