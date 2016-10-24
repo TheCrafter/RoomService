@@ -4,8 +4,8 @@
 
 #include <nuklear_config.h>
 #include <nuklear.h>
-#define NK_GLFW_GL3_IMPLEMENTATION
-#include "nuklear_glfw_gl3.h"
+#define NK_IMPL_IMPLEMENTATION
+#include "nuklear_impl.h"
 #include "window.h"
 
 #define WINDOW_WIDTH 1200
@@ -45,7 +45,7 @@ void render(struct window* window, struct nk_color* background)
      * Make sure to either a.) save and restore or b.) reset your own state after
      * rendering the UI.
      */
-    nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+    nk_impl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
 int main()
@@ -55,33 +55,28 @@ int main()
     if (window == NULL)
         return -1;
 
-    /* Get GLFW handle */
-    GLFWwindow* glfw_handle = window_get_glfw_handle(window);
-
     /* Set callbacks */
     window_set_error_callback(window, error_callback);
     window_set_key_callback(window, key_callback);
 
     /* Platform */
-    int width = 0, height = 0;
     struct nk_context *ctx;
-
-    /* GLFW */
+    int width, height;
     window_get_size(window, &width, &height);
 
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    /* Init nuklear with GLFW */
-    ctx = nk_glfw3_init(glfw_handle, NK_GLFW3_INSTALL_CALLBACKS);
+    /* Init nuklear */
+    ctx = nk_impl_init(window, NK_IMPL_INSTALL_CALLBACKS);
 
     /* Load Fonts: if none of these are loaded a default font will be used  */
     {
         struct nk_font_atlas *atlas;
-        nk_glfw3_font_stash_begin(&atlas);
+        nk_impl_font_stash_begin(&atlas);
 
         struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "res/Font/Roboto-Regular.ttf", 16, 0);
-        nk_glfw3_font_stash_end();
+        nk_impl_font_stash_end();
 
         /* Load Cursor: if you uncomment cursor loading please hide the cursor */
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
@@ -100,7 +95,7 @@ int main()
     {
         /* Input */
         window_update(window);
-        nk_glfw3_new_frame();
+        nk_impl_new_frame();
 
         /* GUI */
         {
@@ -147,7 +142,7 @@ int main()
         /* Swap buffers */
         window_swap_buffers(window);
     }
-    nk_glfw3_shutdown();
+    nk_impl_shutdown();
     glfwTerminate();
 
     return 0;
