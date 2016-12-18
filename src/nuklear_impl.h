@@ -32,6 +32,7 @@
 #define _NUKLEAR_IMPL_H_
 
 #include <assert.h>
+#include <string.h>
 #include <nuklear_config.h>
 #include <nuklear.h>
 #include "window.h"

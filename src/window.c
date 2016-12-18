@@ -52,6 +52,8 @@ struct window* window_create(int width, int height, const char* title)
 
     /* Set callbacks */
     glfwSetKeyCallback(window->window_handle, key_callback);
+    glfwSetScrollCallback(window->window_handle, scroll_callback);
+    glfwSetCharCallback(window->window_handle, char_callback);
 
     /* Load OpenGL extensions */
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
