@@ -35,9 +35,12 @@
 #include <nuklear.h>
 #include "window.h"
 
+/* Callbacks */
+typedef void(*ui_layout_cb)(struct nk_context* ctx, void* data);
+
 struct nk_context* ui_init(struct window* wnd);
 void ui_destroy();
-void ui_render(struct nk_context* ctx);
+void ui_render(struct nk_context* ctx, ui_layout_cb layout_cb, void* layout_data);
 
 
 #endif // ! _UI_H_
