@@ -1,9 +1,15 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <glad/glad.h>
+
+#include <log.h>
 
 #include "window.h"
 #include "ui.h"
+#include "string_utils.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
@@ -11,6 +17,7 @@
 struct layout_data
 {
     const char* button_label;
+    struct cstring* output;
     float* bg;
 };
 
@@ -46,7 +53,10 @@ void layout_render(struct nk_context* ctx, void* layout_data)
         static int property = 20;
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, data->button_label))
-            fprintf(stdout, "button pressed\n");
+        {
+            cstring_append(data->output, "Button pressed");
+            log_info(cstring_get(data->output));
+        }
 
         nk_layout_row_dynamic(ctx, 30, 2);
         if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
@@ -96,6 +106,11 @@ void render(struct window* window, struct nk_context* ctx, struct layout_data* d
 
 int main()
 {
+#ifdef USE_LEAK_DETECTOR
+    /* Init leak detector */
+    ld_init();
+#endif
+
     /* Create window */
     struct window* window = window_create(WINDOW_WIDTH, WINDOW_HEIGHT, "RoomService");
     if (window == NULL)
@@ -123,6 +138,7 @@ int main()
     struct layout_data data;
     data.button_label = "Button";
     data.bg = bg;
+    data.output = cstring_new(NULL);
 
     /* Main Loop */
     while (!window_should_close(window))
@@ -138,7 +154,13 @@ int main()
     }
 
     /* Shutdown */
+    cstring_destroy(data.output);
     ui_destroy();
     glfwTerminate();
+
+#ifdef USE_LEAK_DETECTOR
+    ld_print_leaks();
+    ld_shutdown();
+#endif
     return 0;
 }
