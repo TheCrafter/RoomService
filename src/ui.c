@@ -11,8 +11,7 @@
 struct nk_context* ui_init(struct window* wnd)
 {
     /* Init nuklear */
-    struct nk_context* ctx = malloc(sizeof(struct nk_context));
-    ctx = nk_impl_init(wnd, NK_IMPL_INSTALL_CALLBACKS);
+    struct nk_context* ctx = nk_impl_init(wnd, NK_IMPL_INSTALL_CALLBACKS);
 
     /* Init nuklear */
     ctx = nk_impl_init(wnd, NK_IMPL_INSTALL_CALLBACKS);

@@ -68,9 +68,9 @@ void layout_render(struct nk_context* ctx, void* layout_data)
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, data->button_label))
         {
-            struct cstring* cstr = (struct cstring*)malloc(sizeof(struct cstring));
-            cstring_init(cstr, "Button pressed");
-            vector_append(&data->output_vec, cstr);
+            struct cstring cstr;
+            cstring_init(&cstr, "Button pressed");
+            vector_append(&data->output_vec, &cstr);
         }
 
         nk_layout_row_dynamic(ctx, 30, 2);
@@ -143,8 +143,7 @@ int main()
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     /* Nuklear */
-    struct nk_context* ctx;
-    ctx = ui_init(window);
+    struct nk_context* ctx = ui_init(window);
 
     /* Initial background */
     float bg[] = {0.28f, 0.48f, 0.62f, 1.0f};
@@ -174,7 +173,7 @@ int main()
     vector_destroy(&data.output_vec);
 
     ui_destroy();
-    glfwTerminate();
+    window_destroy(window);
 
 #ifdef USE_LEAK_DETECTOR
     ld_print_leaks();
