@@ -31,13 +31,17 @@
 #ifndef _STRING_UTILS_H
 #define _STRING_UTILS_H
 
-struct cstring;
+#include <stdlib.h>
 
-struct cstring* cstring_new(const char* str);
+struct cstring
+{
+    char* data;
+};
+
+void cstring_init(struct cstring* cstr, const char* str);
 void cstring_destroy(struct cstring* str);
 
 void cstring_append(struct cstring* dest, const char* src);
-char* cstring_get(struct cstring* str);
 
 #endif // ! _STRING_UTILS_H
 

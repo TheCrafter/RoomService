@@ -1,16 +1,10 @@
 #include "string_utils.h"
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 /* Assert messages */
-static const char* not_initialized_msg = "You should use cstring_new to initialize the string first";
-
-/* Struct implementation */
-struct cstring
-{
-    char* str;
-};
+#define NOT_INITIALIZED_MSG "You should use cstring_new to initialize the string first"
+#define APPENDING_NULL_MSG "You are trying to append a null pointer."
 
 /* -------------------------------------------------- */
 /* Utilities                                          */
@@ -36,34 +30,27 @@ static char* create_string(const char* src)
 /* -------------------------------------------------- */
 /* API                                                */
 /* -------------------------------------------------- */
-struct cstring* cstring_new(const char* str)
+void cstring_init(struct cstring* cstr, const char* str)
 {
-    struct cstring* cstr = (struct cstring*)malloc(sizeof(struct cstring));
-    cstr->str = create_string(str);
-    return cstr;
+    memset(cstr, 0, sizeof(struct cstring));
+    cstr->data = create_string(str);
 }
 
 void cstring_destroy(struct cstring* str)
 {
-    assert(str->str != NULL && not_initialized_msg);
-    free(str->str);
-    free(str);
+    assert(str->data != NULL && NOT_INITIALIZED_MSG);
+    free(str->data);
 }
 
 void cstring_append(struct cstring* dest, const char* src)
 {
-    assert(dest->str != NULL && not_initialized_msg);
+    assert(dest->data != NULL && NOT_INITIALIZED_MSG);
+    assert(src != NULL && APPENDING_NULL_MSG);
 
-    size_t str_len = strlen(dest->str);
+    size_t str_len = strlen(dest->data);
     size_t src_len = strlen(src);
 
     /* Append */
-    dest->str = realloc(dest->str, str_len + src_len + 1);
-    strncat(dest->str, src, src_len);
-}
-
-char* cstring_get(struct cstring* str)
-{
-    assert(str->str != NULL && not_initialized_msg);
-    return str->str;
+    dest->data = realloc(dest->data, str_len + src_len + 1);
+    strncat(dest->data, src, src_len);
 }

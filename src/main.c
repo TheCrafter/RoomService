@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 
 #include <log.h>
+#include <vector.h>
 
 #include "window.h"
 #include "ui.h"
@@ -17,7 +18,7 @@
 struct layout_data
 {
     const char* button_label;
-    struct cstring* output;
+    struct vector output_vec;
     float* bg;
 };
 
@@ -43,6 +44,19 @@ void layout_render(struct nk_context* ctx, void* layout_data)
 
     struct nk_color background = nk_rgb_fv(data->bg);
 
+    struct nk_panel output_layout;
+    if (nk_begin(ctx, &output_layout, "Output", nk_rect(500, 200, 250, 250),
+                NK_WINDOW_TITLE|NK_WINDOW_SCALABLE))
+    {
+        nk_layout_row_dynamic(ctx, 10, 1);
+        for (size_t i = 0; i < data->output_vec.size; ++i)
+        {
+            struct cstring* str = vector_at(&data->output_vec, i);
+            nk_label(ctx, str->data, NK_TEXT_LEFT); 
+        }
+    }
+    nk_end(ctx);
+
     struct nk_panel layout;
     if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
                 NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
@@ -54,8 +68,9 @@ void layout_render(struct nk_context* ctx, void* layout_data)
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, data->button_label))
         {
-            cstring_append(data->output, "Button pressed");
-            log_info(cstring_get(data->output));
+            struct cstring* cstr = (struct cstring*)malloc(sizeof(struct cstring));
+            cstring_init(cstr, "Button pressed");
+            vector_append(&data->output_vec, cstr);
         }
 
         nk_layout_row_dynamic(ctx, 30, 2);
@@ -138,7 +153,7 @@ int main()
     struct layout_data data;
     data.button_label = "Button";
     data.bg = bg;
-    data.output = cstring_new(NULL);
+    vector_init(&data.output_vec, sizeof(struct cstr*));
 
     /* Main Loop */
     while (!window_should_close(window))
@@ -154,7 +169,10 @@ int main()
     }
 
     /* Shutdown */
-    cstring_destroy(data.output);
+    for (size_t i = 0; i < data.output_vec.size; ++i)
+        cstring_destroy(vector_at(&data.output_vec, i));
+    vector_destroy(&data.output_vec);
+
     ui_destroy();
     glfwTerminate();
 
