@@ -1,22 +1,22 @@
 #include "ui_widget_log.h"
+#include <stdlib.h>
+#include <nuklear_config.h>
+#include <nuklear.h>
+#include <vector.h>
 
-void ui_widget_log_init(struct ui_widget_log_data* data, const char* title)
+struct ui_widget_log
 {
-    data->title = title;
-    vector_init(&data->lines, sizeof(char*));
-}
+    const char* title;
+    struct vector lines;
+};
 
-void ui_widget_log_destroy(struct ui_widget_log_data* data)
+static void ui_widget_log_render(struct nk_context* ctx, struct ui_view* view, void* view_data)
 {
-    vector_destroy(&data->lines);
-}
-
-void ui_widget_log_render(struct ui_widget_log_data* data, struct nk_context* ctx)
-{
+    struct ui_widget_log* data = (struct ui_widget_log*)view_data;
     struct nk_panel layout;
 
-    if (nk_begin(ctx, &layout, data->title, nk_rect(500, 200, 250, 250),
-                NK_WINDOW_TITLE))
+    if (nk_begin(ctx, &layout, data->title, nk_rect(view->x, view->y, view->width, view->height),
+                NK_WINDOW_TITLE|NK_WINDOW_MOVABLE))
     {
         nk_layout_row_dynamic(ctx, 10, 1);
         for (size_t i = 0; i < data->lines.size; ++i)
@@ -26,4 +26,31 @@ void ui_widget_log_render(struct ui_widget_log_data* data, struct nk_context* ct
         }
     }
     nk_end(ctx);
+}
+
+void ui_widget_log_init(struct ui_view* view, const char* title, float x, float y, float w, float h)
+{
+    struct ui_widget_log* data = malloc(sizeof(struct ui_widget_log));
+    data->title = title;
+    vector_init(&data->lines, sizeof(char*));
+
+    view->x = x;
+    view->y = y;
+    view->width = w;
+    view->height = h;
+    view->render_cb = &ui_widget_log_render;
+    view->data = data;
+}
+
+void ui_widget_log_destroy(struct ui_view* view)
+{
+    struct ui_widget_log* data = view->data;
+    vector_destroy(&data->lines);
+    free(data);
+}
+
+void ui_widget_log_append(struct ui_view* view, const char* msg)
+{
+    struct ui_widget_log* data = view->data;
+    vector_append(&data->lines, &msg);
 }

@@ -4,6 +4,7 @@
 
 #define NK_IMPL_IMPLEMENTATION
 #include "../nuklear_impl.h"
+#include "ui_widget_log.h"
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -42,7 +43,8 @@ void ui_init(struct ui_context* ctx, struct window* wnd)
     }
 
     /* Init widgets */
-    ui_widget_log_init(&ctx->log_widget, "Output");
+    ui_widget_log_init(&ctx->log_view, "Output", 500, 200, 250, 250);
+    ui_widget_log_init(&ctx->info_view, "Info", 500, 450, 250, 250);
 
     /* Init background color */
     float bg[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -55,7 +57,8 @@ void ui_destroy(struct ui_context* ctx)
     nk_impl_shutdown();
 
     /* Destroy widgets */
-    ui_widget_log_destroy(&ctx->log_widget);
+    ui_widget_log_destroy(&ctx->log_view);
+    ui_widget_log_destroy(&ctx->info_view);
 }
 
 static void ui_extra_layout_render(struct ui_context* ui_ctx)
@@ -74,8 +77,8 @@ static void ui_extra_layout_render(struct ui_context* ui_ctx)
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, "Button"))
         {
-            const char* msg = "Button pressed";
-            vector_append(&ui_ctx->log_widget.lines, &msg);
+            ui_widget_log_append(&ui_ctx->log_view, "Button pressed");
+            ui_widget_log_append(&ui_ctx->info_view, "Pressed button");
         }
 
         nk_layout_row_dynamic(ctx, 30, 2);
@@ -110,13 +113,19 @@ static void ui_extra_layout_render(struct ui_context* ui_ctx)
     nk_color_fv(ui_ctx->bg, background);
 }
 
+static void ui_view_render(struct ui_context* ctx, struct ui_view* view)
+{
+    view->render_cb(ctx->nk_ctx, view, view->data);
+}
+
 void ui_render(struct ui_context* ctx)
 {
     /* Start new nuklear frame */
     nk_impl_new_frame();
 
     /* Render widgets */
-    ui_widget_log_render(&ctx->log_widget, ctx->nk_ctx);
+    ui_view_render(ctx, &ctx->log_view);
+    ui_view_render(ctx, &ctx->info_view);
 
     /* Render extra layout (non-widgets) */
     ui_extra_layout_render(ctx);

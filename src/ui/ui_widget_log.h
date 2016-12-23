@@ -31,18 +31,10 @@
 #ifndef _UI_WIDGET_LOG_H
 #define _UI_WIDGET_LOG_H
 
-#include <vector.h>
-#include <nuklear_config.h>
-#include <nuklear.h>
+#include "ui_view.h"
 
-struct ui_widget_log_data
-{
-    const char* title;
-    struct vector lines;
-};
-
-void ui_widget_log_init(struct ui_widget_log_data* data, const char* title);
-void ui_widget_log_destroy(struct ui_widget_log_data* data);
-void ui_widget_log_render(struct ui_widget_log_data* data, struct nk_context* ctx);
+void ui_widget_log_init(struct ui_view* view, const char* title, float x, float y, float w, float h);
+void ui_widget_log_destroy(struct ui_view* view);
+void ui_widget_log_append(struct ui_view* view, const char* msg);
 
 #endif // ! _UI_WIDGET_LOG_H

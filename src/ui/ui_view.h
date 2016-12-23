@@ -28,23 +28,28 @@
 /*   ' ') '( (/                                                                                                      */
 /*     '   '  `                                                                                                      */
 /*********************************************************************************************************************/
-#ifndef _UI_H_
-#define _UI_H_
+#ifndef _UI_VIEW_H
+#define _UI_VIEW_H
 
-#include "../window.h"
-#include "ui_view.h"
+#include <nuklear_config.h>
+#include <nuklear.h>
 
-struct ui_context
+struct ui_view;
+typedef void(*ui_view_render_fn)(struct nk_context* ctx, struct ui_view* view, void* data);
+
+struct ui_view
 {
-    struct nk_context* nk_ctx;
-    struct ui_view log_view;
-    struct ui_view info_view;
-    float* bg;
+    /* Metrics */
+    float x;
+    float y;
+    float width;
+    float height;
+
+    /* View data */
+    void* data;
+
+    /* Drawing callback */
+    ui_view_render_fn render_cb;
 };
 
-void ui_init(struct ui_context* ctx, struct window* wnd);
-void ui_destroy(struct ui_context* ctx);
-void ui_render(struct ui_context* ctx);
-
-
-#endif // ! _UI_H_
+#endif // ! _UI_VIEW_H
