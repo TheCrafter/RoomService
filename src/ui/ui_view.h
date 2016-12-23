@@ -35,7 +35,7 @@
 #include <nuklear.h>
 
 struct ui_view;
-typedef void(*ui_view_render_fn)(struct nk_context* ctx, struct ui_view* view, void* data);
+typedef void(*ui_view_render_fn)(struct nk_context* ctx, struct ui_view* view);
 
 struct ui_view
 {

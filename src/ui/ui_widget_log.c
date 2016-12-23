@@ -10,9 +10,9 @@ struct ui_widget_log
     struct vector lines;
 };
 
-static void ui_widget_log_render(struct nk_context* ctx, struct ui_view* view, void* view_data)
+static void ui_widget_log_render(struct nk_context* ctx, struct ui_view* view)
 {
-    struct ui_widget_log* data = (struct ui_widget_log*)view_data;
+    struct ui_widget_log* data = (struct ui_widget_log*)view->data;
     struct nk_panel layout;
 
     if (nk_begin(ctx, &layout, data->title, nk_rect(view->x, view->y, view->width, view->height),

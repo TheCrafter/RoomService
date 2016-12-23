@@ -115,7 +115,7 @@ static void ui_extra_layout_render(struct ui_context* ui_ctx)
 
 static void ui_view_render(struct ui_context* ctx, struct ui_view* view)
 {
-    view->render_cb(ctx->nk_ctx, view, view->data);
+    view->render_cb(ctx->nk_ctx, view);
 }
 
 void ui_render(struct ui_context* ctx)
