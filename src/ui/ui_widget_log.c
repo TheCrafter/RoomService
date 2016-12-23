@@ -1,8 +1,7 @@
 #include "ui_widget_log.h"
 
-void ui_widget_log_init(struct ui_widget_log_data* data, struct nk_context* ctx, const char* title)
+void ui_widget_log_init(struct ui_widget_log_data* data, const char* title)
 {
-    data->ctx = ctx;
     data->title = title;
     vector_init(&data->lines, sizeof(char*));
 }
@@ -12,9 +11,8 @@ void ui_widget_log_destroy(struct ui_widget_log_data* data)
     vector_destroy(&data->lines);
 }
 
-void ui_widget_log_render(struct ui_widget_log_data* data)
+void ui_widget_log_render(struct ui_widget_log_data* data, struct nk_context* ctx)
 {
-    struct nk_context* ctx = data->ctx;
     struct nk_panel layout;
 
     if (nk_begin(ctx, &layout, data->title, nk_rect(500, 200, 250, 250),

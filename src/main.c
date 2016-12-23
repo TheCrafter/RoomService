@@ -10,7 +10,6 @@
 
 #include "window.h"
 #include "ui/ui.h"
-#include "ui/ui_widget_log.h"
 #include "string_utils.h"
 
 #define WINDOW_WIDTH 1200
@@ -20,7 +19,6 @@ struct layout_data
 {
     const char* button_label;
     float* bg;
-    struct ui_widget_log_data widget_log;
 };
 
 void error_callback(int error, const char* description)
@@ -38,14 +36,13 @@ void key_callback(struct window* window, int key, int scancode, int action, int 
         window_close(window);
 }
 
-void layout_render(struct nk_context* ctx, void* layout_data)
+void layout_render(struct ui_context* ui_ctx, void* layout_data)
 {
     struct layout_data* data;
+    struct nk_context* ctx = ui_ctx->nk_ctx;
     data = (struct layout_data*)layout_data;
 
     struct nk_color background = nk_rgb_fv(data->bg);
-
-    ui_widget_log_render(&data->widget_log);
 
     struct nk_panel layout;
     if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
@@ -59,7 +56,7 @@ void layout_render(struct nk_context* ctx, void* layout_data)
         if (nk_button_label(ctx, data->button_label))
         {
             const char* msg = "Button pressed";
-            vector_append(&data->widget_log.lines, &msg);
+            vector_append(&ui_ctx->log_widget.lines, &msg);
         }
 
         nk_layout_row_dynamic(ctx, 30, 2);
@@ -94,7 +91,7 @@ void layout_render(struct nk_context* ctx, void* layout_data)
     nk_color_fv(data->bg, background);
 }
 
-void render(struct window* window, struct nk_context* ctx, struct layout_data* data)
+void render(struct window* window, struct ui_context* ctx, struct layout_data* data)
 {
     int width, height;
     window_get_size(window, &width, &height);
@@ -131,8 +128,9 @@ int main()
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    /* Nuklear */
-    struct nk_context* ctx = ui_init(window);
+    /* UI */
+    struct ui_context ctx;
+    ui_init(&ctx, window);
 
     /* Initial background */
     float bg[] = {0.28f, 0.48f, 0.62f, 1.0f};
@@ -141,7 +139,6 @@ int main()
     struct layout_data data;
     data.button_label = "Button";
     data.bg = bg;
-    ui_widget_log_init(&data.widget_log, ctx, "Output");
 
     /* Main Loop */
     while (!window_should_close(window))
@@ -150,15 +147,14 @@ int main()
         window_update(window);
 
         /* Render */
-        render(window, ctx, &data);
+        render(window, &ctx, &data);
 
         /* Swap buffers */
         window_swap_buffers(window);
     }
 
     /* Shutdown */
-    ui_widget_log_destroy(&data.widget_log);
-    ui_destroy();
+    ui_destroy(&ctx);
     window_destroy(window);
 
 #ifdef USE_LEAK_DETECTOR

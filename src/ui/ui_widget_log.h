@@ -32,18 +32,17 @@
 #define _UI_WIDGET_LOG_H
 
 #include <vector.h>
-#include "ui.h"
-#include "../string_utils.h"
+#include <nuklear_config.h>
+#include <nuklear.h>
 
 struct ui_widget_log_data
 {
-    struct nk_context* ctx;
     const char* title;
     struct vector lines;
 };
 
-void ui_widget_log_init(struct ui_widget_log_data* data, struct nk_context* ctx, const char* title);
+void ui_widget_log_init(struct ui_widget_log_data* data, const char* title);
 void ui_widget_log_destroy(struct ui_widget_log_data* data);
-void ui_widget_log_render(struct ui_widget_log_data* data);
+void ui_widget_log_render(struct ui_widget_log_data* data, struct nk_context* ctx);
 
 #endif // ! _UI_WIDGET_LOG_H
