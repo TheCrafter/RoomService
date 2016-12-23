@@ -38,6 +38,7 @@ struct ui_context
 {
     struct nk_context* nk_ctx;
     struct ui_widget_log_data log_widget;
+    float* bg;
 };
 
 /* Callbacks */
@@ -45,7 +46,7 @@ typedef void(*ui_layout_cb)(struct ui_context* ctx, void* data);
 
 void ui_init(struct ui_context* ctx, struct window* wnd);
 void ui_destroy(struct ui_context* ctx);
-void ui_render(struct ui_context* ctx, ui_layout_cb layout_cb, void* layout_data);
+void ui_render(struct ui_context* ctx);
 
 
 #endif // ! _UI_H_

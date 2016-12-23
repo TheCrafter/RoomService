@@ -5,21 +5,11 @@
 #include <string.h>
 #include <glad/glad.h>
 
-#include <log.h>
-#include <vector.h>
-
 #include "window.h"
 #include "ui/ui.h"
-#include "string_utils.h"
 
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
-
-struct layout_data
-{
-    const char* button_label;
-    float* bg;
-};
 
 void error_callback(int error, const char* description)
 {
@@ -36,73 +26,18 @@ void key_callback(struct window* window, int key, int scancode, int action, int 
         window_close(window);
 }
 
-void layout_render(struct ui_context* ui_ctx, void* layout_data)
-{
-    struct layout_data* data;
-    struct nk_context* ctx = ui_ctx->nk_ctx;
-    data = (struct layout_data*)layout_data;
-
-    struct nk_color background = nk_rgb_fv(data->bg);
-
-    struct nk_panel layout;
-    if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
-                NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-    {
-        enum {EASY, HARD};
-        static int op = EASY;
-        static int property = 20;
-        nk_layout_row_static(ctx, 30, 80, 1);
-        if (nk_button_label(ctx, data->button_label))
-        {
-            const char* msg = "Button pressed";
-            vector_append(&ui_ctx->log_widget.lines, &msg);
-        }
-
-        nk_layout_row_dynamic(ctx, 30, 2);
-        if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-        if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-
-        nk_layout_row_dynamic(ctx, 25, 1);
-        nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
-
-        /* Background control widget */
-        {
-            struct nk_panel combo;
-            nk_layout_row_dynamic(ctx, 20, 1);
-            nk_label(ctx, "background:", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
-            if (nk_combo_begin_color(ctx, &combo, background, nk_vec2(nk_widget_width(ctx),400)))
-            {
-                nk_layout_row_dynamic(ctx, 120, 1);
-                background = nk_color_picker(ctx, background, NK_RGBA);
-                nk_layout_row_dynamic(ctx, 25, 1);
-                background.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, background.r, 255, 1,1);
-                background.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, background.g, 255, 1,1);
-                background.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, background.b, 255, 1,1);
-                background.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, background.a, 255, 1,1);
-                nk_combo_end(ctx);
-            }
-        }
-    }
-    nk_end(ctx);
-
-    /* Save background color */
-    nk_color_fv(data->bg, background);
-}
-
-void render(struct window* window, struct ui_context* ctx, struct layout_data* data)
+void render(struct window* window, struct ui_context* ctx)
 {
     int width, height;
     window_get_size(window, &width, &height);
 
     /* Draw background */
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(data->bg[0], data->bg[1], data->bg[2], data->bg[3]);
+    glClearColor(ctx->bg[0], ctx->bg[1], ctx->bg[2], ctx->bg[3]);
     glViewport(0, 0, width, height);
 
     /* Render UI */
-    ui_render(ctx, layout_render, data);
+    ui_render(ctx);
 }
 
 int main()
@@ -134,11 +69,7 @@ int main()
 
     /* Initial background */
     float bg[] = {0.28f, 0.48f, 0.62f, 1.0f};
-
-    /* Create data for ui layout */
-    struct layout_data data;
-    data.button_label = "Button";
-    data.bg = bg;
+    ctx.bg = bg;
 
     /* Main Loop */
     while (!window_should_close(window))
@@ -147,7 +78,7 @@ int main()
         window_update(window);
 
         /* Render */
-        render(window, &ctx, &data);
+        render(window, &ctx);
 
         /* Swap buffers */
         window_swap_buffers(window);

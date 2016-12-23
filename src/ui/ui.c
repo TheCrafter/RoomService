@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <nuklear_config.h>
-#include <nuklear.h>
 #define NK_IMPL_IMPLEMENTATION
 #include "../nuklear_impl.h"
 
@@ -45,6 +43,10 @@ void ui_init(struct ui_context* ctx, struct window* wnd)
 
     /* Init widgets */
     ui_widget_log_init(&ctx->log_widget, "Output");
+
+    /* Init background color */
+    float bg[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    ctx->bg = bg;
 }
 
 void ui_destroy(struct ui_context* ctx)
@@ -56,15 +58,68 @@ void ui_destroy(struct ui_context* ctx)
     ui_widget_log_destroy(&ctx->log_widget);
 }
 
-void ui_render(struct ui_context* ctx, ui_layout_cb layout_cb, void* layout_data)
+static void ui_extra_layout_render(struct ui_context* ui_ctx)
 {
-    nk_impl_new_frame();
+    struct nk_context* ctx = ui_ctx->nk_ctx;
+    struct nk_color background = nk_rgb_fv(ui_ctx->bg);
+    struct nk_panel layout;
 
-    /* Declare nuklear layout via callback */
-    layout_cb(ctx, layout_data);
+    if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
+                NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+    {
+        enum {EASY, HARD};
+        static int op = EASY;
+        static int property = 20;
+        nk_layout_row_static(ctx, 30, 80, 1);
+        if (nk_button_label(ctx, "Button"))
+        {
+            const char* msg = "Button pressed";
+            vector_append(&ui_ctx->log_widget.lines, &msg);
+        }
+
+        nk_layout_row_dynamic(ctx, 30, 2);
+        if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+        if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+
+        nk_layout_row_dynamic(ctx, 25, 1);
+        nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
+
+        /* Background control widget */
+        {
+            struct nk_panel combo;
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "background:", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(ctx, 25, 1);
+            if (nk_combo_begin_color(ctx, &combo, background, nk_vec2(nk_widget_width(ctx),400)))
+            {
+                nk_layout_row_dynamic(ctx, 120, 1);
+                background = nk_color_picker(ctx, background, NK_RGBA);
+                nk_layout_row_dynamic(ctx, 25, 1);
+                background.r = (nk_byte)nk_propertyi(ctx, "#R:", 0, background.r, 255, 1,1);
+                background.g = (nk_byte)nk_propertyi(ctx, "#G:", 0, background.g, 255, 1,1);
+                background.b = (nk_byte)nk_propertyi(ctx, "#B:", 0, background.b, 255, 1,1);
+                background.a = (nk_byte)nk_propertyi(ctx, "#A:", 0, background.a, 255, 1,1);
+                nk_combo_end(ctx);
+            }
+        }
+    }
+    nk_end(ctx);
+
+    /* Save background color */
+    nk_color_fv(ui_ctx->bg, background);
+}
+
+void ui_render(struct ui_context* ctx)
+{
+    /* Start new nuklear frame */
+    nk_impl_new_frame();
 
     /* Render widgets */
     ui_widget_log_render(&ctx->log_widget, ctx->nk_ctx);
+
+    /* Render extra layout (non-widgets) */
+    ui_extra_layout_render(ctx);
 
     /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
      * with blending, scissor, face culling, depth test and viewport and
