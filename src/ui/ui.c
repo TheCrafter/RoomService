@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define NK_IMPL_IMPLEMENTATION
-#include "nuklear_impl.h"
+#include "../nuklear_impl.h"
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024

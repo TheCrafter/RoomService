@@ -33,7 +33,7 @@
 
 #include <nuklear_config.h>
 #include <nuklear.h>
-#include "window.h"
+#include "../window.h"
 
 /* Callbacks */
 typedef void(*ui_layout_cb)(struct nk_context* ctx, void* data);

@@ -9,7 +9,8 @@
 #include <vector.h>
 
 #include "window.h"
-#include "ui.h"
+#include "ui/ui.h"
+#include "ui/ui_widget_log.h"
 #include "string_utils.h"
 
 #define WINDOW_WIDTH 1200
@@ -18,8 +19,8 @@
 struct layout_data
 {
     const char* button_label;
-    struct vector output_vec;
     float* bg;
+    struct ui_widget_log_data widget_log;
 };
 
 void error_callback(int error, const char* description)
@@ -44,18 +45,7 @@ void layout_render(struct nk_context* ctx, void* layout_data)
 
     struct nk_color background = nk_rgb_fv(data->bg);
 
-    struct nk_panel output_layout;
-    if (nk_begin(ctx, &output_layout, "Output", nk_rect(500, 200, 250, 250),
-                NK_WINDOW_TITLE|NK_WINDOW_SCALABLE))
-    {
-        nk_layout_row_dynamic(ctx, 10, 1);
-        for (size_t i = 0; i < data->output_vec.size; ++i)
-        {
-            struct cstring* str = vector_at(&data->output_vec, i);
-            nk_label(ctx, str->data, NK_TEXT_LEFT); 
-        }
-    }
-    nk_end(ctx);
+    ui_widget_log_render(&data->widget_log);
 
     struct nk_panel layout;
     if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
@@ -68,9 +58,8 @@ void layout_render(struct nk_context* ctx, void* layout_data)
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, data->button_label))
         {
-            struct cstring cstr;
-            cstring_init(&cstr, "Button pressed");
-            vector_append(&data->output_vec, &cstr);
+            const char* msg = "Button pressed";
+            vector_append(&data->widget_log.lines, &msg);
         }
 
         nk_layout_row_dynamic(ctx, 30, 2);
@@ -152,7 +141,7 @@ int main()
     struct layout_data data;
     data.button_label = "Button";
     data.bg = bg;
-    vector_init(&data.output_vec, sizeof(struct cstr*));
+    ui_widget_log_init(&data.widget_log, ctx, "Output");
 
     /* Main Loop */
     while (!window_should_close(window))
@@ -168,10 +157,7 @@ int main()
     }
 
     /* Shutdown */
-    for (size_t i = 0; i < data.output_vec.size; ++i)
-        cstring_destroy(vector_at(&data.output_vec, i));
-    vector_destroy(&data.output_vec);
-
+    ui_widget_log_destroy(&data.widget_log);
     ui_destroy();
     window_destroy(window);
 
