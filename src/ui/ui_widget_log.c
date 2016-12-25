@@ -16,7 +16,7 @@ static void ui_widget_log_render(struct nk_context* ctx, struct ui_view* view)
     struct nk_panel layout;
 
     if (nk_begin(ctx, &layout, data->title, nk_rect(view->x, view->y, view->width, view->height),
-                NK_WINDOW_TITLE|NK_WINDOW_MOVABLE))
+                NK_WINDOW_TITLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_SCALABLE|NK_WINDOW_BORDER))
     {
         nk_layout_row_dynamic(ctx, 10, 1);
         for (size_t i = 0; i < data->lines.size; ++i)

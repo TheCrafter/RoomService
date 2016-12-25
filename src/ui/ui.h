@@ -42,7 +42,7 @@ struct ui_context
     float* bg;
 };
 
-void ui_init(struct ui_context* ctx, struct window* wnd);
+void ui_init(struct ui_context* ctx, struct window* wnd, float width, float height);
 void ui_destroy(struct ui_context* ctx);
 void ui_render(struct ui_context* ctx);
 

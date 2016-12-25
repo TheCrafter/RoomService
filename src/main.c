@@ -65,7 +65,7 @@ int main()
 
     /* UI */
     struct ui_context ctx;
-    ui_init(&ctx, window);
+    ui_init(&ctx, window, width, height);
 
     /* Initial background */
     float bg[] = {0.28f, 0.48f, 0.62f, 1.0f};

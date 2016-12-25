@@ -9,7 +9,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-void ui_init(struct ui_context* ctx, struct window* wnd)
+void ui_init(struct ui_context* ctx, struct window* wnd, float width, float height)
 {
     /* Init nuklear */
     {
@@ -43,8 +43,8 @@ void ui_init(struct ui_context* ctx, struct window* wnd)
     }
 
     /* Init widgets */
-    ui_widget_log_init(&ctx->log_view, "Output", 500, 200, 250, 250);
-    ui_widget_log_init(&ctx->info_view, "Info", 500, 450, 250, 250);
+    ui_widget_log_init(&ctx->log_view, "Output", 0, 0, 250, height);
+    ui_widget_log_init(&ctx->info_view, "Info", width - 250, 0, 250, height);
 
     /* Init background color */
     float bg[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -67,7 +67,7 @@ static void ui_extra_layout_render(struct ui_context* ui_ctx)
     struct nk_color background = nk_rgb_fv(ui_ctx->bg);
     struct nk_panel layout;
 
-    if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
+    if (nk_begin(ctx, &layout, "Demo", nk_rect(300, 300, 230, 250),
                 NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
                 NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
     {
